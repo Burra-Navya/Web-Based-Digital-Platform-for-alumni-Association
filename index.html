@@ -1,0 +1,266 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Home - VBIT Alumni Association</title>
+  <link rel="stylesheet" href="styles.css">
+  <style>
+    body {
+      font-family: Arial, sans-serif;
+      background: linear-gradient(to right, #8B5FBF, #FF66A3);
+      color: #3A0A50;
+      margin: 0;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      min-height: 100vh;
+      overflow: auto;
+    }
+
+    .sidebar {
+      width: 200px;
+      background: linear-gradient(to right, #5A0E80, #8B5FBF);
+      padding: 20px;
+      position: fixed;
+      top: 0;
+      bottom: 0;
+      left: 0;
+      overflow-y: auto;
+      border-right: 1px solid #ccc;
+      display: none; /* Hidden by default, shown for logged-in users */
+    }
+
+    .sidebar ul {
+      list-style: none;
+      padding: 0;
+      margin: 0;
+    }
+
+    .sidebar li {
+      margin: 15px 0;
+    }
+
+    .sidebar a {
+      color: white;
+      text-decoration: none;
+      font-weight: bold;
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      padding: 10px;
+      border-radius: 5px;
+      transition: background-color 0.3s;
+    }
+
+    .sidebar a:hover {
+      background-color: #E60073;
+      color: white;
+    }
+
+    .sidebar-image {
+      position: fixed;
+      left: 0;
+      top: 0;
+      width: 400px;
+      height: 100%;
+      object-fit: cover;
+      z-index: -1;
+      display: none; /* Hidden by default, shown for logged-out users */
+    }
+
+    .main-content {
+      text-align: center;
+      max-width: 900px;
+      padding-right: 20px;
+      padding-top: 20px;
+      padding-bottom: 20px;
+    }
+
+    .main-content.logged-in,
+    .main-content.logged-out-image {
+      padding-left: 450px; /* Adjusted for sidebar or image width */
+    }
+
+    .main-content.logged-out {
+      padding-left: 20px; /* No sidebar or image */
+    }
+
+    .logo {
+      width: 800px;
+      max-width: 100%;
+      margin-bottom: 20px;
+    }
+
+    .marquee-text {
+      color: white;
+      font-weight: bold;
+      background: linear-gradient(to right, #5A0E80, #8B5FBF);
+      padding: 10px;
+      border-radius: 5px;
+      box-shadow: 0px 0px 10px rgba(90, 14, 128, 0.5);
+      display: inline-block;
+      margin-bottom: 20px;
+    }
+
+    .btn {
+      background: #5A0E80;
+      color: white;
+      padding: 10px 20px;
+      border: none;
+      border-radius: 5px;
+      cursor: pointer;
+      margin: 10px;
+      transition: background 0.3s ease;
+    }
+
+    .btn:hover {
+      background: #E60073;
+    }
+
+    .button-area {
+      display: flex;
+      justify-content: center;
+      gap: 20px;
+      margin-top: 30px;
+    }
+
+    @media (max-width: 768px) {
+      .sidebar,
+      .sidebar-image {
+        width: 250px;
+      }
+      .main-content.logged-in,
+      .main-content.logged-out-image {
+        padding-left: 280px;
+        max-width: 600px;
+      }
+      .main-content.logged-out {
+        padding-left: 20px;
+      }
+      .logo {
+        width: 500px;
+      }
+    }
+
+    @media (max-width: 480px) {
+      .sidebar,
+      .sidebar-image {
+        width: 100%;
+        position: static;
+        border-right: none;
+        border-bottom: 1px solid #ccc;
+      }
+      .main-content.logged-in,
+      .main-content.logged-out-image,
+      .main-content.logged-out {
+        padding-left: 20px;
+        padding-right: 20px;
+        max-width: 90%;
+      }
+      .logo {
+        width: 100%;
+      }
+    }
+  </style>
+  <script type="module">
+    import { initializeApp } from "https://www.gstatic.com/firebasejs/11.6.0/firebase-app.js";
+    import { getAuth, onAuthStateChanged, signOut } from "https://www.gstatic.com/firebasejs/11.6.0/firebase-auth.js";
+
+    const firebaseConfig = {
+      apiKey: "AIzaSyAAkbWWNpOOclazmRurYhcp6tO_lyH48Fk",
+      authDomain: "vbit-web-app-project.firebaseapp.com",
+      projectId: "vbit-web-app-project",
+      storageBucket: "vbit-web-app-project.firebasestorage.app",
+      messagingSenderId: "308538809081",
+      appId: "1:308538809081:web:d568e805cc48caf3902028"
+    };
+
+    console.log("1. Initializing Firebase");
+    try {
+      const app = initializeApp(firebaseConfig);
+      const auth = getAuth(app);
+      console.log("2. Firebase initialized successfully");
+
+      const sidebar = document.querySelector('.sidebar');
+      const sidebarImage = document.querySelector('.sidebar-image');
+      const mainContent = document.querySelector('.main-content');
+      const buttonArea = document.querySelector('.button-area');
+
+      onAuthStateChanged(auth, (user) => {
+        console.log("3. Auth state changed, user:", user ? user.email : "none");
+        if (!buttonArea || !sidebar || !mainContent || !sidebarImage) {
+          console.error("4. Missing elements: buttonArea, sidebar, mainContent, or sidebarImage");
+          return;
+        }
+
+        if (user) {
+          // Logged in
+          sidebar.style.display = 'block';
+          sidebarImage.style.display = 'none';
+          mainContent.classList.remove('logged-out', 'logged-out-image');
+          mainContent.classList.add('logged-in');
+          buttonArea.innerHTML = `
+            <h3>Welcome back, ${user.email}!</h3>
+            <button class="btn" id="logoutBtn">Logout</button>
+          `;
+          const logoutBtn = document.getElementById('logoutBtn');
+          if (logoutBtn) {
+            logoutBtn.addEventListener('click', () => {
+              console.log("5. Signing out");
+              signOut(auth).then(() => {
+                console.log("6. Signed out successfully");
+                location.reload();
+              }).catch((error) => {
+                console.error("7. Sign out error:", error.message);
+              });
+            });
+          }
+        } else {
+          // Not logged in
+          sidebar.style.display = 'none';
+          sidebarImage.style.display = 'block';
+          mainContent.classList.remove('logged-in', 'logged-out');
+          mainContent.classList.add('logged-out-image');
+          buttonArea.innerHTML = `
+            <button class="btn" onclick="location.href='signup.html'">Sign Up</button>
+            <button class="btn" onclick="location.href='login.html'">Login</button>
+          `;
+          console.log("4. Rendered Sign Up/Login buttons");
+        }
+      });
+    } catch (error) {
+      console.error("Firebase Initialization Error:", error.message);
+    }
+  </script>
+</head>
+<body>
+  <!-- Sidebar Menu -->
+  <nav class="sidebar">
+    <ul>
+      <li><a href="about.html">ℹ️ About Us</a></li>
+      <li><a href="donation.html">❤️ Donations</a></li>
+      <li><a href="events.html">🎉 Events</a></li>
+      <li><a href="feedback.html">📝 Feedback</a></li>
+      <li><a href="home.html">🏠 Home</a></li>
+      <li><a href="jobs.html">💼 Jobs</a></li>
+      <li><a href="netwotk.html">🔗 Networking</a></li>
+      <li><a href="profile.html">👤 Profile</a></li>
+      <li><a href="success_stories.html">🌟 Success Stories</a></li>
+    </ul>
+  </nav>
+
+  <!-- Sidebar Image (shown when logged out) -->
+  <img src="sidebar-image.jpg" alt="Sidebar Image" class="sidebar-image">
+
+  <!-- Main Content -->
+  <div class="main-content logged-out-image">
+    <img src="vbit logo(new).png" alt="VBIT Logo" class="logo">
+    <marquee class="marquee-text">✨ Join the VBIT Alumni Platform! Stay connected, share experiences, and guide the next generation! ✨</marquee>
+    <h1>Come join us, share your experiences, and guide us</h1>
+    <h2>Welcome to VBIT Alumni Association</h2>
+
+    <div class="button-area"></div>
+  </div>
+</body>
+</html>
