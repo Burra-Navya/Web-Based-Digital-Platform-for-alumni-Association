@@ -1,0 +1,224 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Success Stories - VBIT Alumni</title>
+  <style>
+    body {
+      margin: 0;
+      padding: 0;
+      font-family: Arial, sans-serif;
+      background: linear-gradient(to right, #8B5FBF, #FF66A3);
+      color: #3A0A50;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      height: 100vh;
+      flex-direction: column;
+    }
+
+    .sidebar {
+      width: 220px;
+      background: linear-gradient(to bottom, #5A0E80, #8B5FBF);
+      padding: 20px;
+      position: fixed;
+      top: 0;
+      left: 0;
+      bottom: 0;
+      color: white;
+    }
+
+    .sidebar ul {
+      list-style: none;
+      padding: 0;
+    }
+
+    .sidebar li {
+      margin-bottom: 15px;
+    }
+
+    .sidebar a {
+      color: white;
+      text-decoration: none;
+    }
+
+    .container {
+      margin-left: 250px;
+      padding: 20px;
+      max-width: 50%; /* Half screen width */
+      margin: 0 auto; /* Center the container */
+    }
+
+    
+
+    input, textarea {
+      width: 100%;
+      padding: 10px;
+      margin-top: 8px;
+      margin-bottom: 15px;
+      border-radius: 5px;
+      border: 1px solid #ccc;
+    }
+
+    .btn {
+      background: #5A0E80;
+      color: white;
+      padding: 10px 15px;
+      border: none;
+      border-radius: 5px;
+      cursor: pointer;
+      transition: background 0.3s;
+    }
+
+    .btn:hover {
+      background: #E60073;
+    }
+
+    .story-card {
+      background: #fff;
+      padding: 15px;
+      margin-top: 15px;
+      border-radius: 10px;
+      box-shadow: 0 1px 5px rgba(0,0,0,0.1);
+    }
+
+    .story-card h4 {
+      margin: 0;
+      color: #5A0E80;
+    }
+
+    .story-card p {
+      margin: 8px 0;
+    }
+
+    .marquee-alert {
+  background-color: #FF66A3;
+  color: white;
+  padding: 10px;
+  text-align: center;
+  font-weight: bold;
+  font-size: 18px;
+  animation: marquee 10s linear infinite;
+  margin-top: 100px; /* Added margin to push the marquee down */
+}
+
+
+    @keyframes marquee {
+      0% { transform: translateX(100%); }
+      100% { transform: translateX(-100%); }
+    }
+  </style>
+</head>
+<body>
+
+  <div class="sidebar">
+    <h2>VBIT Alumni</h2>
+    <ul>
+      <li><a href="about.html">ℹ️ About Us</a></li>
+      <li><a href="donation.html">❤️ Donations</a></li>
+      <li><a href="events.html">🎉 Events</a></li>
+      <li><a href="feedback.html">📝 Feedback</a></li>
+      <li><a href="home.html">🏠 Home</a></li>
+      <li><a href="jobs.html">💼 Jobs</a></li>
+      <li><a href="netwotk.html">🔗 Networking</a></li>
+      <li><a href="profile.html">👤 Profile</a></li>
+      <li><a href="success_stories.html">🌟 Success Stories</a></li>
+    </ul>
+  </div>
+
+  <div class="container">
+    <div class="block">
+      <div class="marquee-alert">🌟 Share Your Inspirational Journey with the VBIT Alumni Community!</div>
+    </div>
+
+    <div class="block">
+      <h3>Submit Your Success Story</h3>
+      <form id="storyForm" onsubmit="submitStory(event)">
+        <label for="name">Your Name</label>
+        <input type="text" id="name" placeholder="Enter your name" required>
+
+        <label for="batch">Batch Year</label>
+        <input type="text" id="batch" placeholder="Enter your batch year (e.g. 2019)" required>
+
+        <label for="currentRole">Current Role</label>
+        <input type="text" id="currentRole" placeholder="Your current position (e.g. Software Engineer at Google)" required>
+
+        <label for="story">Your Story</label>
+        <textarea id="story" rows="5" placeholder="Write your success story..." required></textarea>
+
+        <button type="submit" class="btn">Submit Story</button>
+      </form>
+    </div>
+
+    <div class="block">
+      <h3>Alumni Success Stories</h3>
+      <div id="storiesContainer"></div>
+    </div>
+  </div>
+
+  <!-- Firebase & Script -->
+  <script type="module">
+    import { initializeApp } from "https://www.gstatic.com/firebasejs/11.6.0/firebase-app.js";
+    import { getDatabase, ref, push, set, onValue } from "https://www.gstatic.com/firebasejs/11.6.0/firebase-database.js";
+
+    const firebaseConfig = {
+      apiKey: "AIzaSyAAkbWWNpOOclazmRurYhcp6tO_lyH48Fk",
+      authDomain: "vbit-web-app-project.firebaseapp.com",
+      databaseURL: "https://alumni-association-platf-8081c-default-rtdb.firebaseio.com/",
+      projectId: "vbit-web-app-project",
+      storageBucket: "vbit-web-app-project.appspot.com",
+      messagingSenderId: "308538809081",
+      appId: "1:308538809081:web:d568e805cc48caf3902028"
+    };
+
+    const app = initializeApp(firebaseConfig);
+    const db = getDatabase(app);
+
+    const storyForm = document.getElementById("storyForm");
+    const storiesContainer = document.getElementById("storiesContainer");
+
+    // Submit story
+    window.submitStory = async function (e) {
+      e.preventDefault();
+      const name = document.getElementById("name").value.trim();
+      const batch = document.getElementById("batch").value.trim();
+      const currentRole = document.getElementById("currentRole").value.trim();
+      const story = document.getElementById("story").value.trim();
+
+      if (!name || !batch || !currentRole || !story) {
+        alert("Please fill in all fields.");
+        return;
+      }
+
+      const newStoryRef = push(ref(db, "success_stories"));
+      await set(newStoryRef, {
+        name, batch, currentRole, story, timestamp: Date.now()
+      });
+
+      alert("🎉 Success story submitted!");
+      storyForm.reset();
+    };
+
+    // Load stories
+    const storiesRef = ref(db, "success_stories");
+    onValue(storiesRef, snapshot => {
+      storiesContainer.innerHTML = "";
+      const data = snapshot.val();
+      if (data) {
+        const sorted = Object.values(data).sort((a, b) => b.timestamp - a.timestamp);
+        sorted.forEach(story => {
+          const card = document.createElement("div");
+          card.className = "story-card";
+          card.innerHTML = `
+            <h4>${story.name} (${story.batch})</h4>
+            <p><strong>Current Role:</strong> ${story.currentRole}</p>
+            <p>${story.story}</p>
+          `;
+          storiesContainer.appendChild(card);
+        });
+      }
+    });
+  </script>
+</body>
+</html>

@@ -1,0 +1,142 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Admin Dashboard - VBIT Alumni Association</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            background: linear-gradient(to right, #8B5FBF, #FF66A3);
+            color: white;
+            margin: 0;
+            display: flex;
+        }
+        
+        .sidebar {
+            width: 250px;
+            background: #5A0E80;
+            height: 100vh;
+            position: fixed;
+            top: 0;
+            left: 0;
+            padding-top: 20px;
+        }
+        .sidebar ul {
+            list-style-type: none;
+            padding: 0;
+        }
+        .sidebar ul li {
+            padding: 15px;
+            text-align: center;
+        }
+        .sidebar ul li a {
+            color: white;
+            text-decoration: none;
+            display: block;
+            transition: 0.3s;
+        }
+        .sidebar ul li a:hover {
+            background: #E60073;
+            border-radius: 10px;
+        }
+        
+        .content {
+            margin-left: 260px;
+            padding: 20px;
+            text-align: center;
+            width: calc(100% - 260px);
+        }
+        .dashboard-box {
+            background: white;
+            color: black;
+            padding: 20px;
+            border-radius: 10px;
+            margin: 10px auto;
+            width: 80%;
+            text-align: center;
+            box-shadow: 0px 0px 10px rgba(255, 255, 255, 0.2);
+        }
+        .dashboard-box h3 {
+            color: #5A0E80;
+        }
+        .btn {
+            background: #5A0E80;
+            color: white;
+            border: none;
+            padding: 10px;
+            width: 100%;
+            border-radius: 5px;
+            font-size: 16px;
+            cursor: pointer;
+            margin-top: 10px;
+        }
+        .btn:hover {
+            background: #E60073;
+        }
+    </style>
+</head>
+<body>
+    <div class="sidebar">
+        <ul>
+            <li><a href="admin_dashboard.html">🏠 Dashboard</a></li>
+            <li><a href="manage_alumni.html">👥 Manage Alumni</a></li>
+            <li><a href="manage_jobs.html">💼 Manage Jobs</a></li>
+            <li><a href="manage_events.html">📅 Manage Events</a></li>
+            <li><a href="manage_donations.html">🎗 Manage Donations</a></li>
+            <li><a href="manage_stories.html">🌟 Manage Success Stories</a></li>
+            <li><a href="manage_feedback.html">💬 Manage Feedback</a></li>
+
+            <li><a href="#" onclick="logout()">🔙 Logout</a></li>
+        </ul>
+    </div>
+    
+    <div class="content">
+        <h1>Welcome, Admin!</h1>
+        <p>Manage alumni, job postings, events, and donations here.</p>
+        
+        <div class="dashboard-box">
+            <h3>Manage Alumni</h3>
+            <p>View, approve, or delete alumni profiles.</p>
+            <button class="btn" onclick="location.href='manage_alumni.html'">Go to Alumni</button>
+        </div>
+
+        <div class="dashboard-box">
+            <h3>Manage Job Listings</h3>
+            <p>Approve or remove job postings.</p>
+            <button class="btn" onclick="location.href='manage_jobs.html'">Go to Jobs</button>
+        </div>
+
+        <div class="dashboard-box">
+            <h3>Manage Events</h3>
+            <p>Add, edit, or delete upcoming alumni events.</p>
+            <button class="btn" onclick="location.href='manage_events.html'">Go to Events</button>
+        </div>
+
+        <div class="dashboard-box">
+            <h3>Manage Donations</h3>
+            <p>Track and manage alumni contributions.</p>
+            <button class="btn" onclick="location.href='manage_donations.html'">Go to Donations</button>
+        </div>
+        <div class="dashboard-box">
+            <h3>Manage Success Stories</h3>
+            <p>Manage Success Stories.</p>
+            <button class="btn" onclick="location.href='manage_stories.html'">Go to Donations</button>
+        </div>
+        <div class="dashboard-box">
+            <h3>Manage Feedback</h3>
+            <p>Manage Feedback.</p>
+            <button class="btn" onclick="location.href='manage_feedback.html'">Go to Donations</button>
+        </div>
+    </div>
+    
+    <script>
+        function logout() {
+            alert("Logged out successfully!");
+            localStorage.removeItem("userLoggedIn");
+            localStorage.removeItem("userRole");
+            window.location.href = "home.html";
+        }
+    </script>
+</body>
+</html>

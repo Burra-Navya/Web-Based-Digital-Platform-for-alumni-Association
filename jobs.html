@@ -1,0 +1,401 @@
+<!DOCTYPE html>
+
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Jobs & Internships - VBIT Alumni</title>
+  <style>
+    body {
+      font-family: Arial, sans-serif;
+      margin: 0;
+      padding: 0;
+      background: linear-gradient(to right, #8B5FBF, #FF66A3);
+      color: #3A0A50;
+    }
+    .sidebar {
+      width: 220px;
+      background: linear-gradient(to bottom, #5A0E80, #8B5FBF);
+      padding: 20px;
+      position: fixed;
+      top: 0;
+      left: 0;
+      bottom: 0;
+      color: white;
+    }
+    .sidebar ul {
+      list-style: none;
+      padding: 0;
+    }
+    .sidebar li {
+      margin-bottom: 15px;
+    }
+    .sidebar a {
+      color: white;
+      text-decoration: none;
+    }
+    .container {
+      margin-left: 250px;
+      padding: 20px;
+    }
+    .block {
+      background-color: white;
+      padding: 20px;
+      margin-bottom: 30px;
+      border-radius: 15px;
+      box-shadow: 0px 2px 10px rgba(0,0,0,0.2);
+    }
+    input, textarea, select {
+      width: 100%;
+      padding: 10px;
+      margin-top: 8px;
+      margin-bottom: 15px;
+      border-radius: 5px;
+      border: 1px solid #ccc;
+    }
+    .btn {
+      background: #5A0E80;
+      color: white;
+      padding: 10px 15px;
+      border: none;
+      border-radius: 5px;
+      cursor: pointer;
+      transition: background 0.3s;
+    }
+    .btn:hover {
+      background: #E60073;
+    }
+    .job-card {
+      background: #fff;
+      padding: 15px;
+      margin-top: 15px;
+      border-radius: 10px;
+      box-shadow: 0 1px 5px rgba(0,0,0,0.1);
+    }
+    .job-card h4 {
+      margin: 0;
+      color: #5A0E80;
+    }
+    .job-card p {
+      margin: 8px 0;
+    }
+    .marquee-alert {
+      background-color: #FF6666;
+      color: white;
+      padding: 10px;
+      text-align: center;
+      font-size: 18px;
+      font-weight: bold;
+      animation: marquee 10s linear infinite;
+    }
+    @keyframes marquee {
+      0% {
+        transform: translateX(100%);
+      }
+      100% {
+        transform: translateX(-100%);
+      }
+    }
+  </style>
+</head>
+<body>
+  <div class="sidebar">
+    <h2>VBIT Alumni</h2>
+    <ul>
+      <li><a href="about.html">ℹ️ About Us</a></li>
+      <li><a href="donation.html">❤️ Donations</a></li>
+      <li><a href="events.html">🎉 Events</a></li>
+      <li><a href="feedback.html">📝 Feedback</a></li>
+      <li><a href="home.html">🏠 Home</a></li>
+      <li><a href="jobs.html">💼 Jobs</a></li>
+      <li><a href="netwotk.html">🔗 Networking</a></li>
+      <li><a href="profile.html">👤 Profile</a></li>
+      <li><a href="success_stories.html">🌟 Success Stories</a></li>
+  </div>
+
+  <div class="container">
+    <div class="block">
+      <h3>Post a Job or Internship</h3>
+      <form id="jobForm" onsubmit="submitForm(event)">
+        <label for="formMode">Post Job or Internship:</label>
+        <select id="formMode" onchange="toggleFormMode()">
+          <option value="postJob">Post Job</option>
+          <option value="postInternship">Post Internship</option>
+        </select>
+
+
+    <div id="postJobFields">
+      <label for="jobTitle">Job Title</label>
+      <input type="text" id="jobTitle" placeholder="Enter Job Title"/>
+
+      <label for="company">Company</label>
+      <input type="text" id="company" placeholder="Enter Company Name"/>
+
+      <label for="description">Job Description</label>
+      <textarea id="description" rows="4" placeholder="Enter Job Description"></textarea>
+
+      <label for="jobURL">Job URL</label>
+      <input type="url" id="jobURL" placeholder="Enter Job URL"/>
+
+      <label for="postedDate">Posted Date</label>
+      <input type="date" id="postedDate"/>
+
+      <label for="deadline">Deadline</label>
+      <input type="date" id="deadline"/>
+    </div>
+
+    <div id="postInternshipFields" style="display:none;">
+      <label for="internshipTitle">Internship Title</label>
+      <input type="text" id="internshipTitle" placeholder="Enter Internship Title"/>
+
+      <label for="internshipCompany">Company</label>
+      <input type="text" id="internshipCompany" placeholder="Enter Company Name"/>
+
+      <label for="internshipDescription">Internship Description</label>
+      <textarea id="internshipDescription" rows="4" placeholder="Enter Internship Description"></textarea>
+
+      <label for="internshipURL">Internship URL</label>
+      <input type="url" id="internshipURL" placeholder="Enter Internship URL"/>
+
+      <label for="internshipPostedDate">Posted Date</label>
+      <input type="date" id="internshipPostedDate"/>
+
+      <label for="internshipDeadline">Deadline</label>
+      <input type="date" id="internshipDeadline"/>
+    </div>
+
+    <button type="submit" class="btn">Submit</button>
+  </form>
+</div>
+
+<div class="block" id="marqueeContainer" style="display:none;">
+  <div class="marquee-alert" id="marqueeAlert"></div>
+</div>
+
+<div class="block">
+  <h3>Job & Internship Postings</h3>
+  <div id="jobPostings"></div>
+</div>
+
+
+  </div>
+
+
+/<script type="module">
+  import { initializeApp } from "https://www.gstatic.com/firebasejs/11.6.0/firebase-app.js";
+  import { getDatabase, ref, push, set, get } from "https://www.gstatic.com/firebasejs/11.6.0/firebase-database.js";
+
+  const firebaseConfig = {
+    apiKey: "AIzaSyAAkbWWNpOOclazmRurYhcp6tO_lyH48Fk",
+    authDomain: "vbit-web-app-project.firebaseapp.com",
+    databaseURL: "https://alumni-association-platf-8081c-default-rtdb.firebaseio.com/",
+    projectId: "vbit-web-app-project",
+    storageBucket: "vbit-web-app-project.appspot.com",
+    messagingSenderId: "308538809081",
+    appId: "1:308538809081:web:d568e805cc48caf3902028"
+  };
+
+  const app = initializeApp(firebaseConfig);
+  const db = getDatabase(app);
+
+  const formMode = document.getElementById("formMode");
+  const jobForm = document.getElementById("jobForm");
+  const jobPostingsDiv = document.getElementById("jobPostings");
+  const marqueeContainer = document.getElementById("marqueeContainer");
+  const marqueeAlert = document.getElementById("marqueeAlert");
+
+  // Toggle fields based on selected post type (Job or Internship)
+  function toggleFormMode() {
+    const mode = formMode.value;
+    if (mode === "postJob") {
+      document.getElementById("postJobFields").style.display = "block";
+      document.getElementById("postInternshipFields").style.display = "none";
+    } else if (mode === "postInternship") {
+      document.getElementById("postJobFields").style.display = "none";
+      document.getElementById("postInternshipFields").style.display = "block";
+    }
+  }
+
+  // Reset field styles
+  function resetFieldStyles() {
+    const fields = jobForm.querySelectorAll("input, textarea");
+    fields.forEach(field => {
+      field.classList.remove("error");
+      const errorSpan = field.nextElementSibling;
+      if (errorSpan && errorSpan.classList.contains("error-message")) {
+        errorSpan.remove();
+      }
+    });
+  }
+
+  // Display error message for missing fields
+  function showError(field, message) {
+    field.classList.add("error");
+    const errorMessage = document.createElement("span");
+    errorMessage.classList.add("error-message");
+    errorMessage.style.color = "red";
+    errorMessage.textContent = message;
+    field.parentNode.appendChild(errorMessage);
+  }
+
+  // Submit the form for posting a job or internship
+  window.submitForm = async function (e) {
+    e.preventDefault();
+    resetFieldStyles(); // Reset previous errors
+    const mode = formMode.value;
+    let title, company, description, url, postedDate, deadline;
+    let valid = true;
+
+    if (mode === "postJob") {
+      title = document.getElementById("jobTitle").value.trim();
+      company = document.getElementById("company").value.trim();
+      description = document.getElementById("description").value.trim();
+      url = document.getElementById("jobURL").value.trim();
+      postedDate = document.getElementById("postedDate").value.trim();
+      deadline = document.getElementById("deadline").value.trim();
+
+      // Validate fields
+      if (!title) {
+        showError(document.getElementById("jobTitle"), "Job title is required.");
+        valid = false;
+      }
+      if (!company) {
+        showError(document.getElementById("company"), "Company name is required.");
+        valid = false;
+      }
+      if (!description) {
+        showError(document.getElementById("description"), "Job description is required.");
+        valid = false;
+      }
+      if (!url) {
+        showError(document.getElementById("jobURL"), "Job URL is required.");
+        valid = false;
+      }
+      if (!postedDate) {
+        showError(document.getElementById("postedDate"), "Posted date is required.");
+        valid = false;
+      }
+      if (!deadline) {
+        showError(document.getElementById("deadline"), "Deadline is required.");
+        valid = false;
+      }
+
+      if (!valid) {
+        return; // Prevent form submission if any field is invalid
+      }
+
+      try {
+        const newJobRef = push(ref(db, "jobs"));
+        await set(newJobRef, { title, company, description, url, postedDate, deadline });
+        alert("Job posted successfully!");
+        jobForm.reset();
+        loadJobPostings();
+      } catch (err) {
+        alert("Error posting job.");
+      }
+    } else if (mode === "postInternship") {
+      title = document.getElementById("internshipTitle").value.trim();
+      company = document.getElementById("internshipCompany").value.trim();
+      description = document.getElementById("internshipDescription").value.trim();
+      url = document.getElementById("internshipURL").value.trim();
+      postedDate = document.getElementById("internshipPostedDate").value.trim();
+      deadline = document.getElementById("internshipDeadline").value.trim();
+
+      // Validate fields
+      if (!title) {
+        showError(document.getElementById("internshipTitle"), "Internship title is required.");
+        valid = false;
+      }
+      if (!company) {
+        showError(document.getElementById("internshipCompany"), "Company name is required.");
+        valid = false;
+      }
+      if (!description) {
+        showError(document.getElementById("internshipDescription"), "Internship description is required.");
+        valid = false;
+      }
+      if (!url) {
+        showError(document.getElementById("internshipURL"), "Internship URL is required.");
+        valid = false;
+      }
+      if (!postedDate) {
+        showError(document.getElementById("internshipPostedDate"), "Posted date is required.");
+        valid = false;
+      }
+      if (!deadline) {
+        showError(document.getElementById("internshipDeadline"), "Deadline is required.");
+        valid = false;
+      }
+
+      if (!valid) {
+        return; // Prevent form submission if any field is invalid
+      }
+
+      try {
+        const newInternshipRef = push(ref(db, "internships"));
+        await set(newInternshipRef, { title, company, description, url, postedDate, deadline });
+        alert("Internship posted successfully!");
+        jobForm.reset();
+        loadJobPostings();
+      } catch (err) {
+        alert("Error posting internship.");
+      }
+    }
+  };
+
+  // Load posted jobs and internships
+  async function loadJobPostings() {
+    const jobsRef = ref(db, "jobs");
+    const internshipsRef = ref(db, "internships");
+
+    const snapshot = await get(jobsRef);
+    const internshipSnapshot = await get(internshipsRef);
+
+    jobPostingsDiv.innerHTML = "";
+
+    snapshot.forEach(childSnap => {
+      const job = childSnap.val();
+      const div = document.createElement("div");
+      div.classList.add("job-card");
+      div.innerHTML = `
+        <h4>${job.title} (${job.company})</h4>
+        <p><strong>Description:</strong> ${job.description}</p>
+        <p><strong>Job URL:</strong> <a href="${job.url}" target="_blank">${job.url}</a></p>
+        <p><strong>Posted On:</strong> ${job.postedDate}</p>
+        <p><strong>Deadline:</strong> ${job.deadline}</p>
+      `;
+      jobPostingsDiv.appendChild(div);
+    });
+
+    internshipSnapshot.forEach(childSnap => {
+      const internship = childSnap.val();
+      const div = document.createElement("div");
+      div.classList.add("job-card");
+      div.innerHTML = `
+        <h4>${internship.title} (${internship.company})</h4>
+        <p><strong>Description:</strong> ${internship.description}</p>
+        <p><strong>Internship URL:</strong> <a href="${internship.url}" target="_blank">${internship.url}</a></p>
+        <p><strong>Posted On:</strong> ${internship.postedDate}</p>
+        <p><strong>Deadline:</strong> ${internship.deadline}</p>
+      `;
+      jobPostingsDiv.appendChild(div);
+
+      // Check if deadline is approaching
+      const currentDate = new Date();
+      const deadlineDate = new Date(internship.deadline);
+      const timeDifference = deadlineDate - currentDate;
+
+      if (timeDifference < 86400000 && timeDifference > 0) {  // Deadline within 24 hours
+        marqueeContainer.style.display = "block";
+        marqueeAlert.textContent = `${internship.title} is reaching its deadline! Apply now!`;
+      }
+    });
+  }
+
+  // Initial load of job postings
+  loadJobPostings();
+</script>
+
+
+</body>
+</html>

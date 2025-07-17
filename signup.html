@@ -1,0 +1,261 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Sign Up - VBIT Alumni Association</title>
+</head>
+<body>
+  <div class="signup-container">
+    <h2>Sign Up for VBIT Alumni Association</h2>
+
+    <form id="signup-form">
+      <div class="form-group">
+        <div class="column">
+          <label for="name">Full Name</label>
+          <input type="text" id="name" placeholder="Enter your name" required>
+          <div class="error" id="name-error"></div>
+
+          <label for="email">Email</label>
+          <input type="email" id="email" placeholder="Enter your email" required>
+          <div class="error" id="email-error"></div>
+
+          <label for="password">Password</label>
+          <input type="password" id="password" placeholder="Enter password" required>
+          <div class="error" id="password-error"></div>
+
+          <label for="confirm-password">Confirm Password</label>
+          <input type="password" id="confirm-password" placeholder="Confirm password" required>
+          <div class="error" id="confirm-password-error"></div>
+        </div>
+      </div>
+
+      <button type="submit" class="btn" id="signup-btn">Sign Up</button>
+    </form>
+
+    <p>Already have an account? <a href="login.html">Login</a></p>
+  </div>
+
+  <!-- Firebase SDKs -->
+  <script type="module">
+    import { initializeApp } from "https://www.gstatic.com/firebasejs/11.6.0/firebase-app.js";
+    import { getAuth, createUserWithEmailAndPassword, fetchSignInMethodsForEmail } from "https://www.gstatic.com/firebasejs/11.6.0/firebase-auth.js";
+    import { getDatabase, ref, set } from "https://www.gstatic.com/firebasejs/11.6.0/firebase-database.js";
+
+    const firebaseConfig = {
+      apiKey: "AIzaSyAAkbWWNpOOclazmRurYhcp6tO_lyH48Fk",
+      authDomain: "http://vbit-web-app-project.firebaseapp.com",
+      databaseURL: "https://alumni-association-platf-8081c-default-rtdb.firebaseio.com/",
+      projectId: "vbit-web-app-project",
+      storageBucket: "http://vbit-web-app-project.firebasestorage.app",
+      messagingSenderId: "308538809081",
+      appId: "1:308538809081:web:d568e805cc48caf3902028"
+    };
+
+    console.log("1. Initializing Firebase");
+    try {
+      const app = initializeApp(firebaseConfig);
+      const auth = getAuth(app);
+      const db = getDatabase(app);
+      console.log("2. Firebase initialized successfully");
+
+      const signupForm = document.getElementById("signup-form");
+      const signupBtn = document.getElementById("signup-btn");
+
+      signupForm.addEventListener('submit', async (e) => {
+        e.preventDefault();
+        console.log("3. Form submitted");
+
+        const name = document.getElementById('name').value.trim();
+        const email = document.getElementById('email').value.trim();
+        const password = document.getElementById('password').value;
+        const confirmPassword = document.getElementById('confirm-password').value;
+        const errors = {
+          name: document.getElementById('name-error'),
+          email: document.getElementById('email-error'),
+          password: document.getElementById('password-error'),
+          confirmPassword: document.getElementById('confirm-password-error')
+        };
+
+        // Reset errors
+        Object.values(errors).forEach(error => error.textContent = '');
+        console.log("4. Errors reset");
+
+        // Basic validation
+        console.log("5. Starting validation");
+        let isValid = true;
+        if (!name) {
+          errors.name.textContent = 'Name is required.';
+          isValid = false;
+        }
+        if (!email) {
+          errors.email.textContent = 'Email is required.';
+          isValid = false;
+        }
+        if (!password) {
+          errors.password.textContent = 'Password is required.';
+          isValid = false;
+        }
+        if (password !== confirmPassword) {
+          errors.confirmPassword.textContent = 'Passwords do not match.';
+          isValid = false;
+        }
+
+        if (!isValid) {
+          console.log("6. Validation failed");
+          return;
+        }
+
+        signupBtn.disabled = true;
+        signupBtn.textContent = 'Signing Up...';
+        console.log("7. Starting signup process");
+
+        try {
+          // Check if email is already registered
+          console.log("8. Checking email:", email);
+          const signInMethods = await fetchSignInMethodsForEmail(auth, email);
+          if (signInMethods.length > 0) {
+            errors.email.textContent = 'Email is already registered. Please login.';
+            console.log("9. Email already registered");
+            return;
+          }
+
+          // Create user
+          console.log("10. Creating user:", email);
+          const userCredential = await createUserWithEmailAndPassword(auth, email, password);
+          const user = userCredential.user;
+          console.log("11. User created, UID:", user.uid);
+
+          // Store user info in Realtime Database
+          console.log("12. Storing user data in database");
+          await set(ref(db, 'users/' + user.uid), {
+            name: name,
+            email: email
+          });
+
+          console.log("13. User data stored successfully");
+
+          // Reset form
+          signupForm.reset();
+          console.log("14. Form reset");
+
+          // Redirect to login page
+          window.location.href = 'login.html';
+          console.log("15. Redirecting to login.html");
+
+        } catch (error) {
+          console.error("Signup Error:", error.code, error.message);
+          switch (error.code) {
+            case 'auth/invalid-email':
+              errors.email.textContent = 'Invalid email format.';
+              break;
+            case 'auth/weak-password':
+              errors.password.textContent = 'Password must be at least 6 characters.';
+              break;
+            case 'auth/email-already-in-use':
+              errors.email.textContent = 'Email is already registered. Please login.';
+              break;
+            case 'auth/network-request-failed':
+              errors.email.textContent = 'Network error. Please check your connection.';
+              break;
+            default:
+              errors.email.textContent = 'Error: ' + error.message;
+          }
+        } finally {
+          signupBtn.disabled = false;
+          signupBtn.textContent = 'Sign Up';
+          console.log("16. Button re-enabled");
+        }
+      });
+    } catch (error) {
+      console.error("Firebase Initialization Error:", error.message);
+      document.getElementById('email-error').textContent = 'Failed to initialize Firebase. Please try again later.';
+    }
+  </script>
+
+  <!-- Styling -->
+  <style>
+    body {
+      font-family: Arial, sans-serif;
+      background: linear-gradient(to right, #8B5FBF, #FF66A3);
+      margin: 0;
+      padding: 0;
+      display: flex;
+      height: 100vh;
+      align-items: center;
+      justify-content: center;
+    }
+
+    .signup-container {
+      background-color: rgba(255, 255, 255, 0.8);
+      padding: 30px;
+      border-radius: 15px;
+      width: 600px;
+      text-align: center;
+    }
+
+    .form-group {
+      display: flex;
+      gap: 20px;
+    }
+
+    .column {
+      flex: 1;
+    }
+
+    input, select {
+      width: 100%;
+      padding: 10px;
+      margin-top: 8px;
+      margin-bottom: 15px;
+      border-radius: 5px;
+      border: 1px solid #ccc;
+      transition: border-color 0.3s;
+    }
+
+    input:focus, select:focus {
+      border-color: #5A0E80;
+      outline: none;
+    }
+
+    .btn {
+      width: 100%;
+      padding: 12px;
+      background-color: #5A0E80;
+      color: white;
+      font-size: 16px;
+      border: none;
+      border-radius: 5px;
+      cursor: pointer;
+      margin-top: 10px;
+      transition: background-color 0.3s;
+    }
+
+    .btn:hover {
+      background-color: #E60073;
+    }
+
+    .btn:disabled {
+      background-color: #ccc;
+      cursor: not-allowed;
+    }
+
+    a {
+      color: #5A0E80;
+      font-weight: bold;
+    }
+
+    a:hover {
+      text-decoration: underline;
+    }
+
+    .error {
+      color: red;
+      font-size: 0.8em;
+      margin-top: -10px;
+      margin-bottom: 10px;
+      text-align: left;
+    }
+  </style>
+</body>
+</html>

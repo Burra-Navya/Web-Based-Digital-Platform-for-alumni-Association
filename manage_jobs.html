@@ -1,0 +1,199 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Manage Jobs - Admin Dashboard</title>
+
+  <script type="module">
+    import { initializeApp } from "https://www.gstatic.com/firebasejs/11.6.0/firebase-app.js";
+    import { getDatabase, ref, onValue, remove, update } from "https://www.gstatic.com/firebasejs/11.6.0/firebase-database.js";
+
+    const firebaseConfig = {
+      apiKey: "AIzaSyAAkbWWNpOOclazmRurYhcp6tO_lyH48Fk",
+      authDomain: "vbit-web-app-project.firebaseapp.com",
+      databaseURL: "https://alumni-association-platf-8081c-default-rtdb.firebaseio.com/",
+      projectId: "vbit-web-app-project",
+      storageBucket: "vbit-web-app-project.appspot.com",
+      messagingSenderId: "308538809081",
+      appId: "1:308538809081:web:d568e805cc48caf3902028"
+    };
+
+    const app = initializeApp(firebaseConfig);
+    const db = getDatabase(app);
+
+    const jobList = document.getElementById("job-list");
+
+    function loadJobs() {
+      const jobsRef = ref(db, "jobs");
+      onValue(jobsRef, (snapshot) => {
+        jobList.innerHTML = "";
+        snapshot.forEach((childSnapshot) => {
+          const data = childSnapshot.val();
+          const key = childSnapshot.key;
+          const row = document.createElement("tr");
+
+          // Check the job status, and only show 'Delete' if the job is approved
+          let actions = `<button class="btn approve" onclick="approveJob('${key}')">Approve</button>`;
+          if (data.status === "Approved") {
+            actions = `<button class="btn delete" onclick="deleteJob('${key}')">Delete</button>`;
+          }
+
+          row.innerHTML = `
+            <td>${data.title || "N/A"}</td>
+            <td>${data.company || "N/A"}</td>
+            <td>${data.status || "Pending"}</td>
+            <td>
+              ${actions}
+            </td>
+          `;
+
+          jobList.appendChild(row);
+        });
+      });
+    }
+
+    window.approveJob = async function (key) {
+      const confirmed = confirm("Are you sure you want to approve this job posting?");
+      if (!confirmed) return;
+
+      const jobRef = ref(db, `jobs/${key}`);
+      await update(jobRef, { status: "Approved" });
+      alert("Job approved successfully!");
+    };
+
+    window.deleteJob = async function (key) {
+      const confirmed = confirm("Are you sure you want to delete this job posting?");
+      if (!confirmed) return;
+
+      const jobRef = ref(db, `jobs/${key}`);
+      await remove(jobRef);
+      alert("Job deleted successfully!");
+    };
+
+    loadJobs();
+  </script>
+
+  <style>
+    body {
+      font-family: Arial, sans-serif;
+      background: linear-gradient(to right, #8B5FBF, #FF66A3);
+      color: white;
+      margin: 0;
+      display: flex;
+    }
+
+    .sidebar {
+      width: 250px;
+      background: #5A0E80;
+      height: 100vh;
+      position: fixed;
+      top: 0;
+      left: 0;
+      padding-top: 20px;
+    }
+
+    .sidebar ul {
+      list-style-type: none;
+      padding: 0;
+    }
+
+    .sidebar ul li {
+      padding: 15px;
+      text-align: center;
+    }
+
+    .sidebar ul li a {
+      color: white;
+      text-decoration: none;
+      display: block;
+      transition: 0.3s;
+    }
+
+    .sidebar ul li a:hover {
+      background: #E60073;
+      border-radius: 10px;
+    }
+
+    .container {
+      margin-left: 270px;
+      padding: 20px;
+      width: calc(100% - 270px);
+    }
+
+    h2 {
+      color: #5A0E80;
+      text-align: center;
+    }
+
+    table {
+      width: 100%;
+      border-collapse: collapse;
+      margin-top: 20px;
+      background-color: white;
+      color: black;
+      border-radius: 10px;
+      overflow: hidden;
+    }
+
+    th, td {
+      border: 1px solid #ddd;
+      padding: 10px;
+      text-align: center;
+    }
+
+    th {
+      background: #E60073;
+      color: white;
+    }
+
+    .btn {
+      padding: 8px 12px;
+      border: none;
+      border-radius: 5px;
+      cursor: pointer;
+    }
+
+    .approve {
+      background: green;
+      color: white;
+    }
+
+    .delete {
+      background: red;
+      color: white;
+    }
+  </style>
+</head>
+<body>
+  <nav class="sidebar">
+    <ul>
+      <li><a href="admin_dashboard.html">🏠 Dashboard</a></li>
+      <li><a href="manage_alumni.html">👥 Manage Alumni</a></li>
+      <li><a href="manage_jobs.html">💼 Manage Jobs</a></li>
+      <li><a href="manage_events.html">📅 Manage Events</a></li>
+      <li><a href="manage_donations.html">🎗 Manage Donations</a></li>
+      <li><a href="manage_stories.html">🌟 Manage Success Stories</a></li>
+      <li><a href="manage_feedback.html">💬 Manage Feedback</a></li>
+
+
+      <li><a href="home.html">🔙 Logout</a></li>
+    </ul>
+  </nav>
+
+  <div class="container">
+    <h2>Manage Job Postings</h2>
+    <table>
+      <thead>
+        <tr>
+          <th>Job Title</th>
+          <th>Company</th>
+          <th>Status</th>
+          <th>Actions</th>
+        </tr>
+      </thead>
+      <tbody id="job-list"></tbody>
+    </table>
+  </div>
+</body>
+</html>

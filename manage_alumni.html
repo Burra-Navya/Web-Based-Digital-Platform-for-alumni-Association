@@ -1,0 +1,208 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Manage Alumni - Admin Dashboard</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            background: linear-gradient(to right, #8B5FBF, #FF66A3);
+            color: white;
+            margin: 0;
+            display: flex;
+        }
+
+        .sidebar {
+            width: 250px;
+            background: #5A0E80;
+            height: 100vh;
+            position: fixed;
+            top: 0;
+            left: 0;
+            padding-top: 20px;
+        }
+        .sidebar ul {
+            list-style-type: none;
+            padding: 0;
+        }
+        .sidebar ul li {
+            padding: 15px;
+            text-align: center;
+        }
+        .sidebar ul li a {
+            color: white;
+            text-decoration: none;
+            display: block;
+            transition: 0.3s;
+        }
+        .sidebar ul li a:hover {
+            background: #E60073;
+            border-radius: 10px;
+        }
+
+        .main-content {
+            margin-left: 260px;
+            padding: 20px;
+            width: calc(100% - 260px);
+        }
+
+        .container {
+            max-width: 800px;
+            margin: auto;
+            background: white;
+            color: black;
+            padding: 20px;
+            border-radius: 10px;
+            box-shadow: 0px 0px 10px rgba(255, 255, 255, 0.2);
+        }
+
+        h2 {
+            text-align: center;
+            color: #5A0E80;
+        }
+
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            margin-top: 20px;
+        }
+
+        th, td {
+            border: 1px solid #ddd;
+            padding: 10px;
+            text-align: center;
+        }
+
+        th {
+            background: #E60073;
+            color: white;
+        }
+
+        .btn {
+            padding: 8px 12px;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+            margin: 5px;
+        }
+
+        .approve {
+            background: green;
+            color: white;
+        }
+
+        .delete {
+            background: red;
+            color: white;
+            display: none; /* Hidden initially */
+        }
+
+        /* Style for buttons side by side */
+        .actions {
+            display: flex;
+            justify-content: center;
+            gap: 10px;
+        }
+    </style>
+</head>
+<body>
+    <nav class="sidebar">
+        <ul>
+            <li><a href="admin_dashboard.html">🏠 Dashboard</a></li>
+      <li><a href="manage_alumni.html">👥 Manage Alumni</a></li>
+      <li><a href="manage_jobs.html">💼 Manage Jobs</a></li>
+      <li><a href="manage_events.html">📅 Manage Events</a></li>
+      <li><a href="manage_donations.html">🎗 Manage Donations</a></li>
+      <li><a href="manage_stories.html">🌟 Manage Success Stories</a></li>
+      <li><a href="manage_feedback.html">💬 Manage Feedback</a></li>
+
+      <li><a href="home.html">🔙 Logout</a></li>
+        </ul>
+    </nav>
+
+    <div class="main-content">
+        <div class="container">
+            <h2>Manage Alumni</h2>
+            <table>
+                <thead>
+                    <tr>
+                        <th>Name</th>
+                        <th>Email</th>
+                        <th>Status</th>
+                        <th>Actions</th>
+                    </tr>
+                </thead>
+                <tbody id="alumni-list">
+                    <!-- Data from Firebase will be inserted here -->
+                </tbody>
+            </table>
+        </div>
+    </div>
+
+    <script type="module">
+        import { initializeApp } from "https://www.gstatic.com/firebasejs/11.6.0/firebase-app.js";
+        import { getDatabase, ref, onValue, remove, update } from "https://www.gstatic.com/firebasejs/11.6.0/firebase-database.js";
+
+        const firebaseConfig = {
+            apiKey: "AIzaSyAAkbWWNpOOclazmRurYhcp6tO_lyH48Fk",
+            authDomain: "vbit-web-app-project.firebaseapp.com",
+            databaseURL: "https://alumni-association-platf-8081c-default-rtdb.firebaseio.com/",
+            projectId: "vbit-web-app-project",
+            storageBucket: "vbit-web-app-project.appspot.com",
+            messagingSenderId: "308538809081",
+            appId: "1:308538809081:web:d568e805cc48caf3902028"
+        };
+
+        const app = initializeApp(firebaseConfig);
+        const db = getDatabase(app);
+        const alumniRef = ref(db, 'users');
+
+        onValue(alumniRef, (snapshot) => {
+            const data = snapshot.val();
+            const tbody = document.getElementById('alumni-list');
+            tbody.innerHTML = '';
+
+            for (const id in data) {
+                const alumni = data[id];
+                const row = document.createElement('tr');
+                row.innerHTML = `
+                    <td>${alumni.name || ''}</td>
+                    <td>${alumni.email || ''}</td>
+                    <td>${alumni.status || 'Pending'}</td>
+                    <td class="actions">
+                        <button class="btn approve" onclick="approveAlumni('${id}')">Approve</button>
+                        <button class="btn delete" id="delete-${id}" onclick="deleteAlumni('${id}')">Delete</button>
+                    </td>
+                `;
+                tbody.appendChild(row);
+            }
+        });
+
+        window.approveAlumni = async function(id) {
+            const statusRef = ref(db, `users/${id}`);
+            await update(statusRef, { status: 'Approved' });
+
+            // Show the delete button after approval and hide the approve button
+            const deleteButton = document.querySelector(`#delete-${id}`);
+            if (deleteButton) {
+                deleteButton.style.display = "inline"; // Show the delete button
+            }
+
+            // Hide the approve button after approval
+            const approveButton = document.querySelector(`button[onclick="approveAlumni('${id}')"]`);
+            if (approveButton) {
+                approveButton.style.display = "none"; // Hide the approve button
+            }
+
+            alert("Alumni approved successfully.");
+        }
+
+        window.deleteAlumni = async function(id) {
+            const alumniRef = ref(db, `users/${id}`);
+            await remove(alumniRef);
+            alert("Alumni record deleted.");
+        }
+    </script>
+</body>
+</html>

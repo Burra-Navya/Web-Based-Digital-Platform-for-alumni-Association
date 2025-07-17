@@ -1,0 +1,299 @@
+<!DOCTYPE html>
+
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Profile - VBIT Alumni Association</title>
+  <style>
+    /* SAME CSS AS BEFORE */
+    body {
+      font-family: Arial, sans-serif;
+      background: linear-gradient(to right, #8B5FBF, #FF66A3);
+      color: #3A0A50;
+      margin: 0;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      min-height: 100vh;
+      overflow: auto;
+    }
+    .sidebar {
+      width: 200px;
+      background: linear-gradient(to right, #5A0E80, #8B5FBF);
+      padding: 20px;
+      position: fixed;
+      top: 0;
+      bottom: 0;
+      left: 0;
+      overflow-y: auto;
+      border-right: 1px solid #ccc;
+    }
+    .sidebar ul {
+      list-style: none;
+      padding: 0;
+      margin: 0;
+    }
+    .sidebar li {
+      margin: 15px 0;
+    }
+    .sidebar a {
+      color: white;
+      text-decoration: none;
+      font-weight: bold;
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      padding: 10px;
+      border-radius: 5px;
+      transition: background-color 0.3s;
+    }
+    .sidebar a:hover {
+      background-color: #E60073;
+      color: white;
+    }
+    .main-content {
+      text-align: center;
+      max-width: 900px;
+      padding: 20px;
+      margin-left: 250px;
+    }
+    .profile-container {
+      display: flex;
+      justify-content: center;
+      gap: 30px;
+    }
+    .profile-picture {
+      width: 150px;
+      height: 150px;
+      background-color: #f0f0f0;
+      border-radius: 50%;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      font-size: 3rem;
+      color: #5A0E80;
+      position: relative;
+      overflow: hidden;
+    }
+    .profile-picture img {
+      width: 100%;
+      height: 100%;
+      object-fit: cover;
+      border-radius: 50%;
+    }
+    .profile-picture input[type="file"] {
+      display: none;
+    }
+    .profile-picture label {
+      cursor: pointer;
+      position: absolute;
+      bottom: 5px;
+      right: 5px;
+      background: #fff;
+      padding: 5px;
+      border-radius: 50%;
+      font-size: 1.2rem;
+      box-shadow: 0 0 5px rgba(0,0,0,0.3);
+    }
+    .profile-form input, .profile-form select {
+      width: 100%;
+      padding: 10px;
+      margin: 10px 0;
+      border: 1px solid #ccc;
+      border-radius: 5px;
+    }
+    .profile-form button {
+      background-color: #5A0E80;
+      color: white;
+      padding: 10px 20px;
+      border: none;
+      border-radius: 5px;
+      cursor: pointer;
+    }
+    .profile-form button:hover {
+      background-color: #E60073;
+    }
+  </style>
+</head>
+
+<body>
+
+<!-- Sidebar -->
+
+<nav class="sidebar">
+  <ul>
+    <li><a href="about.html">ℹ️ About Us</a></li>
+    <li><a href="donation.html">❤️ Donations</a></li>
+    <li><a href="events.html">🎉 Events</a></li>
+    <li><a href="feedback.html">📝 Feedback</a></li>
+    <li><a href="home.html">🏠 Home</a></li>
+    <li><a href="jobs.html">💼 Jobs</a></li>
+    <li><a href="netwotk.html">🔗 Networking</a></li>
+    <li><a href="profile.html">👤 Profile</a></li>
+    <li><a href="success_stories.html">🌟 Success Stories</a></li>
+  </ul>
+</nav>
+
+<!-- Main Content -->
+
+<div class="main-content">
+  <h1>Update Your Profile</h1>
+
+  <div class="profile-container">
+    <div class="profile-picture" id="profile-picture-container">
+      <span id="profile-initial">A</span>
+      <input type="file" id="profile-pic-upload" onchange="previewProfilePic(event)">
+      <label for="profile-pic-upload">📷</label>
+    </div>
+
+```
+<div class="profile-form">
+  <form id="profile-form" onsubmit="saveProfile(event)">
+    <input type="text" id="first-name" placeholder="First Name" required oninput="updateInitial()">
+    <input type="text" id="last-name" placeholder="Last Name" required>
+    <input type="email" id="email" placeholder="Email" required>
+    <select id="status" onchange="toggleCompanyField()" required>
+      <option value="student">Student</option>
+      <option value="employed">Employed</option>
+    </select>
+    <div id="company-name-field" style="display: none;">
+      <input type="text" id="company-name" placeholder="Company Name" />
+    </div>
+    <input type="url" id="linkedin-url" placeholder="LinkedIn URL" />
+    <button type="submit">Save Profile</button>
+  </form>
+</div>
+```
+
+  </div>
+</div>
+
+<!-- Firebase SDKs -->
+
+<script src="https://www.gstatic.com/firebasejs/9.22.2/firebase-app-compat.js"></script>
+
+<script src="https://www.gstatic.com/firebasejs/9.22.2/firebase-database-compat.js"></script>
+
+<script src="https://www.gstatic.com/firebasejs/9.22.2/firebase-storage-compat.js"></script>
+
+<script>
+  // Initialize Firebase
+  const firebaseConfig = {
+    apiKey: "AIzaSyAAkbWWNpOOclazmRurYhcp6tO_lyH48Fk",
+    authDomain: "vbit-web-app-project.firebaseapp.com",
+    databaseURL: "https://alumni-association-platf-8081c-default-rtdb.firebaseio.com/",
+    projectId: "vbit-web-app-project",
+    storageBucket: "vbit-web-app-project.appspot.com",
+    messagingSenderId: "308538809081",
+    appId: "1:308538809081:web:d568e805cc48caf3902028"
+  };
+  firebase.initializeApp(firebaseConfig);
+  const database = firebase.database();
+  const storage = firebase.storage();
+
+  const userId = "currentUser"; // You can later replace it with logged-in user's id
+
+  // Load Profile when page loads
+  window.onload = function() {
+    database.ref('profiles/' + userId).once('value').then((snapshot) => {
+      const data = snapshot.val();
+      if (data) {
+        document.getElementById('first-name').value = data.firstName || '';
+        document.getElementById('last-name').value = data.lastName || '';
+        document.getElementById('email').value = data.email || '';
+        document.getElementById('status').value = data.status || 'student';
+        toggleCompanyField();
+        document.getElementById('company-name').value = data.company || '';
+        document.getElementById('linkedin-url').value = data.linkedin || '';
+        updateInitial();
+        if (data.profilePicUrl) {
+          const container = document.getElementById('profile-picture-container');
+          container.innerHTML = `
+            <img src="${data.profilePicUrl}" alt="Profile Picture">
+            <input type="file" id="profile-pic-upload" onchange="previewProfilePic(event)" style="display:none;">
+            <label for="profile-pic-upload">📷</label>
+          `;
+        }
+      }
+    });
+  };
+
+  function previewProfilePic(event) {
+    const file = event.target.files[0];
+    if (file) {
+      const reader = new FileReader();
+      reader.onload = function(e) {
+        const container = document.getElementById('profile-picture-container');
+        container.innerHTML = `
+          <img src="${e.target.result}" alt="Profile Picture">
+          <input type="file" id="profile-pic-upload" onchange="previewProfilePic(event)" style="display:none;">
+          <label for="profile-pic-upload">📷</label>
+        `;
+      };
+      reader.readAsDataURL(file);
+    }
+  }
+
+  function updateInitial() {
+    const firstName = document.getElementById('first-name').value.trim();
+    const profileInitial = document.getElementById('profile-initial');
+    if (profileInitial) {
+      profileInitial.textContent = firstName.charAt(0).toUpperCase();
+    }
+  }
+
+  function toggleCompanyField() {
+    const status = document.getElementById('status').value;
+    const companyField = document.getElementById('company-name-field');
+    if (status === 'employed') {
+      companyField.style.display = 'block';
+    } else {
+      companyField.style.display = 'none';
+    }
+  }
+
+  async function saveProfile(event) {
+    event.preventDefault();
+
+    const firstName = document.getElementById('first-name').value.trim();
+    const lastName = document.getElementById('last-name').value.trim();
+    const email = document.getElementById('email').value.trim();
+    const status = document.getElementById('status').value;
+    const company = document.getElementById('company-name').value.trim();
+    const linkedin = document.getElementById('linkedin-url').value.trim();
+    const file = document.getElementById('profile-pic-upload').files[0];
+
+    let profilePicUrl = '';
+
+    if (file) {
+      const storageRef = storage.ref('profiles/' + userId + '-profile-pic');
+      await storageRef.put(file);
+      profilePicUrl = await storageRef.getDownloadURL();
+    } else {
+      const snapshot = await database.ref('profiles/' + userId).once('value');
+      profilePicUrl = snapshot.val()?.profilePicUrl || '';
+    }
+
+    const userData = {
+      firstName,
+      lastName,
+      email,
+      status,
+      company: status === 'employed' ? company : '',
+      linkedin,
+      profilePicUrl
+    };
+
+    database.ref('profiles/' + userId).set(userData)
+      .then(() => {
+        alert('Profile updated successfully! 🎉');
+      })
+      .catch((error) => {
+        console.error('Error saving profile:', error);
+      });
+  }
+</script>
+
+</body>
+</html>
